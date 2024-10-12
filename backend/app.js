@@ -1,6 +1,8 @@
 // app.js
 const express = require('express');
 const sequelize = require('./config/database');  // Importar la configuración de Sequelize
+const authRoutes = require('./routes/authRoutes');
+const documentRoutes = require('./routes/documentRoutes');
 require('dotenv').config();  // Cargar variables de entorno
 
 const app = express();
@@ -17,6 +19,12 @@ sequelize.authenticate()
 app.get('/', (req, res) => {
   res.send('Servidor funcionando correctamente');
 });
+
+// Rutas de autenticación
+app.use('/api/auth', authRoutes);
+
+// Rutas para la gestión de documentos
+app.use('/api/documents', documentRoutes);
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 3000;
