@@ -16,6 +16,10 @@ const TipoDocumento = sequelize.define('TipoDocumento', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  prefijo: {
+    type: DataTypes.STRING(10),
+    allowNull: false,
+  },
 }, {
   timestamps: true,
   tableName: 'tipos_documentos',

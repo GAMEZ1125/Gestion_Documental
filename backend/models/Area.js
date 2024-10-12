@@ -16,9 +16,13 @@ const Area = sequelize.define('Area', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  prefijo: {
+    type: DataTypes.STRING(10),
+    allowNull: false,
+  },
 }, {
   timestamps: true,
-  tableName: 'areas',  // Coincidir con el nombre de la tabla existente
+  tableName: 'areas',
 });
 
 module.exports = Area;
