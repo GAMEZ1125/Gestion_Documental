@@ -1,4 +1,3 @@
-// src/components/Login.js
 import React, { useState } from 'react';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -15,7 +14,14 @@ const Login = () => {
         correo_electronico: email,
         contraseña: password,
       });
+
+      // Guardar el token en localStorage
       localStorage.setItem('token', response.data.token);
+
+      // Guardar información del usuario si lo necesitas
+      localStorage.setItem('user', JSON.stringify(response.data.usuario));
+
+      // Redirigir al dashboard
       navigate('/dashboard');
     } catch (error) {
       alert('Credenciales incorrectas');

@@ -1,5 +1,6 @@
 // src/components/Dashboard.js
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../services/api';
 
 const Dashboard = () => {
@@ -21,6 +22,9 @@ const Dashboard = () => {
   return (
     <div className="container mt-5">
       <h2>Documentos</h2>
+      <Link to="/documents/new" className="btn btn-primary mb-3">
+        Crear Documento
+      </Link>
       <ul className="list-group">
         {documents.map((doc) => (
           <li key={doc.id} className="list-group-item">
