@@ -3,8 +3,6 @@ const Documento = require('../models/Documento');
 // Crear un documento
 exports.createDocument = async (req, res) => {
   try {
-    console.log('Solicitud recibida para crear documento:', req.body); // Verifica los datos recibidos
-
     const {
       titulo,
       descripcion,
@@ -13,16 +11,11 @@ exports.createDocument = async (req, res) => {
       estado,
       id_area,
       id_tipo_documento,
-      ruta_archivo,
     } = req.body;
 
-    // Verificar si algún campo requerido falta
-    if (!titulo || !version || !estado || !id_area || !id_tipo_documento || !ruta_archivo) {
-      console.log('Campos requeridos faltantes:', req.body); // Log de campos faltantes
-      return res.status(400).json({ message: 'Faltan campos requeridos.' });
-    }
+    // Verificar si se recibió un archivo
+    const rutaArchivo = req.file ? req.file.path : null;
 
-    // Intentar crear el documento en la base de datos
     const documento = await Documento.create({
       titulo,
       descripcion,
@@ -31,14 +24,13 @@ exports.createDocument = async (req, res) => {
       estado,
       id_area,
       id_tipo_documento,
-      ruta_archivo,
+      ruta_archivo: rutaArchivo,
     });
 
-    console.log('Documento creado con éxito:', documento); // Log al crear correctamente
     res.status(201).json(documento);
   } catch (error) {
-    console.error('Error en la creación del documento:', error); // Log del error completo
-    res.status(500).json({ message: 'Error interno del servidor.', error });
+    console.error('Error al crear documento:', error);
+    res.status(500).json({ message: 'Error interno del servidor', error });
   }
 };
 
@@ -47,7 +39,7 @@ exports.getDocuments = async (req, res) => {
   try {
     const documentos = await Documento.findAll();
     res.status(200).json(documentos);
-  } catch (error) {
+  } catch (error) {hj56
     res.status(500).json({ message: 'Error al obtener documentos', error });
   }
 };
