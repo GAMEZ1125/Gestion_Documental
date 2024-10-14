@@ -1,93 +1,79 @@
+// controllers/documentoController.js
+
 const Documento = require('../models/Documento');
 
-// Crear un documento
-exports.createDocument = async (req, res) => {
-  try {
-    const {
-      titulo,
-      descripcion,
-      contenido,
-      version,
-      estado,
-      id_area,
-      id_tipo_documento,
-    } = req.body;
-
-    // Verificar si se recibió un archivo
-    const rutaArchivo = req.file ? req.file.path : null;
-
-    const documento = await Documento.create({
-      titulo,
-      descripcion,
-      contenido,
-      version,
-      estado,
-      id_area,
-      id_tipo_documento,
-      ruta_archivo: rutaArchivo,
-    });
-
-    res.status(201).json(documento);
-  } catch (error) {
-    console.error('Error al crear documento:', error);
-    res.status(500).json({ message: 'Error interno del servidor', error });
-  }
-};
-
 // Obtener todos los documentos
-exports.getDocuments = async (req, res) => {
+const getDocuments = async (req, res) => {
   try {
     const documentos = await Documento.findAll();
-    res.status(200).json(documentos);
-  } catch (error) {hj56
-    res.status(500).json({ message: 'Error al obtener documentos', error });
+    res.json(documentos);
+  } catch (error) {
+    console.error('Error al obtener documentos:', error);
+    res.status(500).json({ message: 'Error al obtener documentos.' });
   }
 };
 
 // Obtener un documento por ID
-exports.getDocumentById = async (req, res) => {
+const getDocumentById = async (req, res) => {
   try {
     const documento = await Documento.findByPk(req.params.id);
-    if (!documento) return res.status(404).json({ message: 'Documento no encontrado' });
-    res.status(200).json(documento);
+    if (!documento) {
+      return res.status(404).json({ message: 'Documento no encontrado.' });
+    }
+    res.json(documento);
   } catch (error) {
-    res.status(500).json({ message: 'Error al obtener documento', error });
+    console.error('Error al obtener documento:', error);
+    res.status(500).json({ message: 'Error al obtener documento.' });
   }
 };
 
-// Actualizar un documento
-exports.updateDocument = async (req, res) => {
-  const { titulo, descripcion, contenido, version, estado, id_area, id_tipo_documento, ruta_archivo } = req.body;
+// Crear un documento
+const createDocument = async (req, res) => {
   try {
-    const documento = await Documento.findByPk(req.params.id);
-    if (!documento) return res.status(404).json({ message: 'Documento no encontrado' });
+    const documento = await Documento.create(req.body);
+    res.status(201).json(documento);
+  } catch (error) {
+    console.error('Error al crear documento:', error);
+    res.status(500).json({ message: 'Error al crear documento.' });
+  }
+};
 
-    await documento.update({
-      titulo,
-      descripcion,
-      contenido,
-      version,
-      estado,
-      id_area,
-      id_tipo_documento,
-      ruta_archivo,
+// Actualizar un documento por ID
+const updateDocument = async (req, res) => {
+  try {
+    const [updated] = await Documento.update(req.body, {
+      where: { id: req.params.id },
     });
-
-    res.status(200).json(documento);
+    if (!updated) {
+      return res.status(404).json({ message: 'Documento no encontrado.' });
+    }
+    res.json({ message: 'Documento actualizado con éxito.' });
   } catch (error) {
-    res.status(500).json({ message: 'Error al actualizar documento', error });
+    console.error('Error al actualizar documento:', error);
+    res.status(500).json({ message: 'Error al actualizar documento.' });
   }
 };
 
-// Eliminar un documento
-exports.deleteDocument = async (req, res) => {
+// Eliminar un documento por ID
+const deleteDocument = async (req, res) => {
   try {
-    const documento = await Documento.findByPk(req.params.id);
-    if (!documento) return res.status(404).json({ message: 'Documento no encontrado' });
-
-    await documento.destroy();
-    res.status(200).json({ message: 'Documento eliminado' });
+    const deleted = await Documento.destroy({
+      where: { id: req.params.id },
+    });
+    if (!deleted) {
+      return res.status(404).json({ message: 'Documento no encontrado.' });
+    }
+    res.json({ message: 'Documento eliminado con éxito.' });
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar documento', error });
+    console.error('Error al eliminar documento:', error);
+    res.status(500).json({ message: 'Error al eliminar documento.' });
   }
+};
+
+module.exports = {
+  getDocuments,
+  getDocumentById,
+  createDocument,
+  updateDocument,
+  deleteDocument,
 };

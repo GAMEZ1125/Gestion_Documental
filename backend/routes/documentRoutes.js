@@ -1,46 +1,37 @@
 // routes/documentRoutes.js
 const express = require('express');
 const multer = require('multer');
+const fs = require('fs');
+const path = require('path');
 const authenticateToken = require('../middlewares/authMiddleware');
+const {
+  createDocument,
+  getDocuments,
+  getDocumentById,
+  updateDocument,
+  deleteDocument,
+} = require('../controllers/documentoController'); // Importación correcta de controladores
+
 const Documento = require('../models/Documento');
 const Area = require('../models/Area');
 const TipoDocumento = require('../models/TipoDocumento');
-const { 
-  createDocument, 
-  getDocuments, 
-  getDocumentById, 
-  updateDocument, 
-  deleteDocument 
-} = require('../controllers/documentoController');
 
 const router = express.Router();
 
-// Configurar Multer sin renombrar el archivo
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/'); // Carpeta destino
-  },
-  filename: (req, file, cb) => {
-    // Usar el nombre original del archivo
-    console.log('Nombre original del archivo:', file.originalname);
-    cb(null, file.originalname);
-  },
-});
-
+// Configuración de Multer usando memoryStorage para renombrar después de recibir el archivo
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 /* ===== Rutas ===== */
 
-// Crear documento (sin renombrar el archivo)
+// Crear un documento con renombrado personalizado
 router.post('/', authenticateToken, upload.single('archivo'), async (req, res) => {
   try {
-    console.log('Token:', req.headers.authorization); // Verificar el token
     console.log('Datos del cuerpo:', req.body); // Verificar campos del body
-    console.log('Archivo subido:', req.file); // Verificar archivo subido
+    console.log('Archivo subido:', req.file); // Verificar archivo
 
     const { titulo, descripcion, id_area, id_tipo_documento } = req.body;
 
-    // Validar campos obligatorios
     if (!titulo || !id_area || !id_tipo_documento) {
       return res.status(400).json({ message: 'Faltan campos requeridos.' });
     }
@@ -56,23 +47,33 @@ router.post('/', authenticateToken, upload.single('archivo'), async (req, res) =
       where: { id_area, id_tipo_documento },
     }) + 1;
 
-    console.log(`Consecutivo calculado: ${consecutivo}`);
+    const version = 1;
+    const extension = req.file.originalname.split('.').pop();
 
-    // Crear registro en la base de datos
-    const documento = await Documento.create({
-      titulo,
-      descripcion,
-      version: 1,
-      estado: 'Borrador',
-      id_area,
-      id_tipo_documento,
-      ruta_archivo: `uploads/${req.file.filename}`, // Usar el nombre original del archivo
+    const nuevoNombre = `${area.prefijo}-${tipoDoc.prefijo}-${String(consecutivo).padStart(2, '0')}-${titulo}-${version}.${extension}`;
+    const rutaArchivo = path.join(__dirname, '../uploads', nuevoNombre);
+
+    fs.writeFile(rutaArchivo, req.file.buffer, async (err) => {
+      if (err) {
+        console.error('Error al guardar el archivo:', err);
+        return res.status(500).json({ message: 'Error al guardar el archivo.' });
+      }
+
+      const documento = await Documento.create({
+        titulo,
+        descripcion,
+        version,
+        estado: 'Borrador',
+        id_area,
+        id_tipo_documento,
+        ruta_archivo: `uploads/${nuevoNombre}`,
+      });
+
+      res.status(201).json({ message: 'Documento creado con éxito.', documento });
     });
-
-    res.status(201).json({ message: 'Documento creado con éxito.', documento });
   } catch (error) {
-    console.error('Error al crear documento:', error);
-    res.status(500).json({ message: 'Error interno del servidor.', error });
+    console.error('Error al crear el documento:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
 });
 
@@ -88,7 +89,7 @@ router.put('/:id', authenticateToken, updateDocument);
 // Eliminar un documento por ID
 router.delete('/:id', authenticateToken, deleteDocument);
 
-// Calcular consecutivo para un área y tipo de documento
+// Calcular consecutivo para área y tipo de documento
 router.get('/consecutivo/:id_area/:id_tipo_documento', async (req, res) => {
   const { id_area, id_tipo_documento } = req.params;
 
@@ -102,7 +103,7 @@ router.get('/consecutivo/:id_area/:id_tipo_documento', async (req, res) => {
     res.json({ consecutivo });
   } catch (error) {
     console.error('Error al calcular consecutivo:', error);
-    res.status(500).json({ message: 'Error al calcular consecutivo.' });
+    res.status(500).json({ message: 'Error interno del servidor.' });
   }
 });
 

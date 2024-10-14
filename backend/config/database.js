@@ -11,7 +11,18 @@ const sequelize = new Sequelize(
         dialect: 'mysql',
         port: 3306,
         logging: false,
-    },
+        timezone: '-05:00', // Usar el desplazamiento UTC para Colombia (UTC-5)
+        dialectOptions: {
+            useUTC: false, // Desactivar el uso de UTC
+            dateStrings: true,
+            typeCast: function (field, next) {
+                if (field.type === 'DATETIME' || field.type === 'TIMESTAMP') {
+                    return field.string();
+                }
+                return next();
+            },
+        },
+    }
 );
 
 module.exports = sequelize;
