@@ -5,6 +5,7 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import DocumentForm from './components/DocumentForm';
 import UserForm from './components/UserForm';
+import UserDashboard from './components/UserDashboard'; // Importar el nuevo dashboard de usuarios
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import PrivateRoute from './components/PrivateRoute';
@@ -23,6 +24,7 @@ const App = () => {
             </PrivateRoute>
           }
         />
+        {/* Gestión de documentos */}
         <Route
           path="/documents/new"
           element={
@@ -31,8 +33,25 @@ const App = () => {
             </PrivateRoute>
           }
         />
+        {/* Gestión de usuarios */}
+        <Route
+          path="/users"
+          element={
+            <PrivateRoute>
+              <UserDashboard /> {/* Mostrar el listado de usuarios */}
+            </PrivateRoute>
+          }
+        />
         <Route
           path="/users/new"
+          element={
+            <PrivateRoute>
+              <UserForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/users/edit/:id"
           element={
             <PrivateRoute>
               <UserForm />

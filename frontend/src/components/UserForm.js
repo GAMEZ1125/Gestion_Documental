@@ -49,7 +49,7 @@ const UserForm = () => {
         await api.post('/users', userData);
         alert('Usuario creado con éxito.');
       }
-      navigate('/dashboard'); // Redirigir al dashboard
+      navigate('/users'); // Redirigir a users
     } catch (error) {
       console.error('Error al guardar usuario:', error);
       alert('Error al guardar el usuario.');
