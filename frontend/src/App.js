@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import DocumentForm from './components/DocumentForm';
+import UserForm from './components/UserForm';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import PrivateRoute from './components/PrivateRoute';
@@ -27,6 +28,14 @@ const App = () => {
           element={
             <PrivateRoute>
               <DocumentForm />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/users/new"
+          element={
+            <PrivateRoute>
+              <UserForm />
             </PrivateRoute>
           }
         />

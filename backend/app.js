@@ -5,7 +5,8 @@ const authRoutes = require('./routes/authRoutes');
 const areaRoutes = require('./routes/areaRoutes');
 const tipoDocumentoRoutes = require('./routes/tipoDocumentoRoutes');
 const documentRoutes = require('./routes/documentRoutes');
-
+const userRoutes = require('./routes/userRoutes');
+const workflowRoutes = require('./routes/workflowRoutes');
 
 const app = express();
 
@@ -19,6 +20,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/areas', areaRoutes);
 app.use('/api/tipos_documentos', tipoDocumentoRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/workflow', workflowRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

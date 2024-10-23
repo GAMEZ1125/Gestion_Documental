@@ -25,6 +25,9 @@ const Dashboard = () => {
       <Link to="/documents/new" className="btn btn-primary mb-3">
         Crear Documento
       </Link>
+      <Link to="/users/new" className="btn btn-primary mb-3">
+        Gestionar Usuarios
+      </Link>
       <ul className="list-group">
         {documents.map((doc) => (
           <li key={doc.id} className="list-group-item">
