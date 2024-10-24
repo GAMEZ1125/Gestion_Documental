@@ -1,16 +1,20 @@
 const express = require('express');
-const router = express.Router();
-const TipoDocumento = require('../models/TipoDocumento');
+const {
+  getTiposDocumento,
+  getTipoDocumentoById,
+  createTipoDocumento,
+  updateTipoDocumento,
+  deleteTipoDocumento,
+} = require('../controllers/tipoDocumentoController');
+const authenticateToken = require('../middlewares/authMiddleware'); // Verificar token  
 
-// Obtener todos los tipos de documentos
-router.get('/', async (req, res) => {
-  try {
-    const tipos = await TipoDocumento.findAll();
-    res.json(tipos);
-  } catch (error) {
-    console.error('Error al obtener tipos de documentos:', error);
-    res.status(500).json({ message: 'Error al obtener tipos de documentos.' });
-  }
-});
+const router = express.Router(); // Crear router
 
-module.exports = router;
+//Rutas de acceso a los métodos de la clase TipoDocumento
+router.get('/', authenticateToken, getTiposDocumento);
+router.get('/:id', authenticateToken, getTipoDocumentoById);
+router.post('/', authenticateToken, createTipoDocumento);
+router.put('/:id', authenticateToken, updateTipoDocumento); // Actualizar un tipo de documento
+router.delete('/:id', authenticateToken, deleteTipoDocumento); // Eliminar un tipo de documento
+
+module.exports = router; // Exportar router
