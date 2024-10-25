@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 const DocumentWorkflow = () => {
   const [documents, setDocuments] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const response = await api.get('/documents?estado=Borrador');
+        const response = await api.get('/documents?estado=Borrador'); // Solo documentos en borrador
         setDocuments(response.data);
       } catch (error) {
         console.error('Error al obtener documentos pendientes:', error);
@@ -18,7 +20,7 @@ const DocumentWorkflow = () => {
 
   const handleApprove = async (id) => {
     try {
-      await api.put(`/documents/${id}/aprobar`);
+      await api.put(`/documents/${id}`, { estado: 'Aprobado' });
       alert('Documento aprobado con éxito.');
       setDocuments(documents.filter((doc) => doc.id !== id));
     } catch (error) {
@@ -28,7 +30,7 @@ const DocumentWorkflow = () => {
 
   const handleReject = async (id) => {
     try {
-      await api.delete(`/documents/${id}/rechazar`);
+      await api.delete(`/documents/${id}`);
       alert('Documento rechazado y eliminado.');
       setDocuments(documents.filter((doc) => doc.id !== id));
     } catch (error) {
@@ -46,6 +48,9 @@ const DocumentWorkflow = () => {
             <div>
               <button className="btn btn-success btn-sm me-2" onClick={() => handleApprove(doc.id)}>
                 Aprobar
+              </button>
+              <button className="btn btn-warning btn-sm me-2" onClick={() => navigate(`/documents/edit/${doc.id}`)}>
+                Editar
               </button>
               <button className="btn btn-danger btn-sm" onClick={() => handleReject(doc.id)}>
                 Rechazar
