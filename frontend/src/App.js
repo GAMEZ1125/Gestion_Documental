@@ -1,18 +1,19 @@
-// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import DocumentDashboard from './components/DocumentDashboard';
 import DocumentForm from './components/DocumentForm';
+import UserDashboard from './components/UserDashboard';
+import UserForm from './components/UserForm';
+import AreaDashboard from './components/AreaDashboard';
+import AreaForm from './components/AreaForm';
 import TipoDocumentoDashboard from './components/TipoDocumentoDashboard';
 import TipoDocumentoForm from './components/TipoDocumentoForm';
-import AreaForm from './components/AreaForm';
-import UserForm from './components/UserForm';
-import UserDashboard from './components/UserDashboard'; // Gestión de usuarios
-import AreaDashboard from './components/AreaDashboard'; // Gestión de áreas
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import PrivateRoute from './components/PrivateRoute';
+import Layout from './components/Layout'; // Importar el layout global
 
 const App = () => {
   return (
@@ -21,102 +22,29 @@ const App = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Dashboard general */}
+        {/* Rutas con layout global */}
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <PrivateRoute>
-              <Dashboard />
+              <Layout />
             </PrivateRoute>
           }
-        />
-
-        {/* Gestión de Documentos */}
-        <Route
-          path="/documents/new"
-          element={
-            <PrivateRoute>
-              <DocumentForm />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Gestión de Usuarios */}
-        <Route
-          path="/users"
-          element={
-            <PrivateRoute>
-              <UserDashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/users/new"
-          element={
-            <PrivateRoute>
-              <UserForm />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/users/edit/:id"
-          element={
-            <PrivateRoute>
-              <UserForm />
-            </PrivateRoute>
-          }
-        />
-
-        {/* Gestión de Áreas */}
-        <Route
-          path="/areas"
-          element={
-            <PrivateRoute>
-              <AreaDashboard /> {/* Mostrar el listado de áreas */}
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/areas/new"
-          element={
-            <PrivateRoute>
-              <AreaForm />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/areas/edit/:id"
-          element={
-            <PrivateRoute>
-              <AreaForm />
-            </PrivateRoute>
-          }
-        />
-        {/* Gestión de Tipos de Documentos */}
-        <Route
-          path="/tipos_documentos"
-          element={
-            <PrivateRoute>
-              <TipoDocumentoDashboard />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/tipos_documentos/new"
-          element={
-            <PrivateRoute>
-              <TipoDocumentoForm />
-            </PrivateRoute>
-          }
-        />
-        <Route
-          path="/tipos_documentos/edit/:id"
-          element={
-            <PrivateRoute>
-              <TipoDocumentoForm />
-            </PrivateRoute>
-          }
-        />
+        >
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="areas" element={<AreaDashboard />} />
+          <Route path="areas/new" element={<AreaForm />} />
+          <Route path="areas/edit/:id" element={<AreaForm />} />
+          <Route path="tipos_documentos" element={<TipoDocumentoDashboard />} />
+          <Route path="tipos_documentos/new" element={<TipoDocumentoForm />} />
+          <Route path="tipos_documentos/edit/:id" element={<TipoDocumentoForm />} />
+          <Route path="users" element={<UserDashboard />} />
+          <Route path="users/new" element={<UserForm />} />
+          <Route path="users/edit/:id" element={<UserForm />} />
+          <Route path="documents" element={<DocumentDashboard />} />
+          <Route path="documents/new" element={<DocumentForm />} />
+          <Route path="documents/edit/:id" element={<DocumentForm />} />
+        </Route>
 
         <Route path="*" element={<NotFound />} />
       </Routes>
