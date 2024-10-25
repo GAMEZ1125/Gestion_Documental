@@ -1,3 +1,4 @@
+// routes/userRoutes.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/Usuario'); // Asegúrate de que este modelo exista

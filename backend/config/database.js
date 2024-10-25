@@ -1,6 +1,5 @@
-// config/database.js
 const { Sequelize } = require('sequelize');
-require('dotenv').config(); // Import .env file
+require('dotenv').config(); // Importar el archivo .env
 
 const sequelize = new Sequelize(
     process.env.DB_NAME,
@@ -13,7 +12,7 @@ const sequelize = new Sequelize(
         logging: false,
         timezone: '-05:00', // Usar el desplazamiento UTC para Colombia (UTC-5)
         dialectOptions: {
-            useUTC: false, // Desactivar el uso de UTC
+            // Eliminar useUTC
             dateStrings: true,
             typeCast: function (field, next) {
                 if (field.type === 'DATETIME' || field.type === 'TIMESTAMP') {

@@ -1,8 +1,13 @@
+// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import DocumentDashboard from './components/DocumentDashboard';
+import DocumentEdit from './components/DocumentEdit';
+import DocumentView from './components/DocumentView';
+import DocumentWorkflow from './components/DocumentWorkflow';
+
 import DocumentForm from './components/DocumentForm';
 import UserDashboard from './components/UserDashboard';
 import UserForm from './components/UserForm';
@@ -43,7 +48,9 @@ const App = () => {
           <Route path="users/edit/:id" element={<UserForm />} />
           <Route path="documents" element={<DocumentDashboard />} />
           <Route path="documents/new" element={<DocumentForm />} />
-          <Route path="documents/edit/:id" element={<DocumentForm />} />
+          <Route path="documents/view" element={<DocumentView />} />
+          <Route path="documents/workflow" element={<DocumentWorkflow />} />
+          <Route path="documents/edit/:id" element={<DocumentEdit />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

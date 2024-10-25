@@ -18,6 +18,22 @@ const TipoDocumento = require('../models/TipoDocumento');
 
 const router = express.Router();
 
+// Descargar un archivo desde la carpeta 'uploads'
+router.get('/download/:filename', authenticateToken, (req, res) => {
+  const filename = req.params.filename; // Obtener el nombre del archivo desde la URL
+
+  // Crear la ruta al archivo dentro de la carpeta 'uploads'
+  const filePath = path.join(__dirname, '../uploads', filename);
+
+  // Servir el archivo para su descarga
+  res.download(filePath, (err) => {
+    if (err) {
+      console.error('Error al descargar el archivo:', err);
+      return res.status(404).json({ message: 'Archivo no encontrado' });
+    }
+  });
+});
+
 // Configuración de Multer usando memoryStorage para renombrar después de recibir el archivo
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -77,6 +93,7 @@ router.post('/', authenticateToken, upload.single('archivo'), async (req, res) =
   }
 });
 
+
 // Obtener lista de documentos
 router.get('/', authenticateToken, getDocuments);
 
@@ -106,5 +123,6 @@ router.get('/consecutivo/:id_area/:id_tipo_documento', async (req, res) => {
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 });
+
 
 module.exports = router;
