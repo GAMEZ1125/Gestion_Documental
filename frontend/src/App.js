@@ -9,6 +9,7 @@ import DocumentView from './components/DocumentView';
 import DocumentWorkflow from './components/DocumentWorkflow';
 import DocumentManagement from './components/DocumentManagement';
 import DocumentForm from './components/DocumentForm';
+import DocumentAudit from './components/DocumentAudit';
 import UserDashboard from './components/UserDashboard';
 import UserForm from './components/UserForm';
 import AreaDashboard from './components/AreaDashboard';
@@ -52,6 +53,7 @@ const App = () => {
           <Route path="documents/workflow" element={<DocumentWorkflow />} />
           <Route path="documents/edit/:id" element={<DocumentEdit />} />
           <Route path="documents/management" element={<DocumentManagement />} />
+          <Route path="auditorias" element={<DocumentAudit />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

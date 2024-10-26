@@ -24,7 +24,7 @@ const Documento = sequelize.define('Documento', {
   },
   version: {
     type: DataTypes.INTEGER,
-    defaultValue: 1,  // Aquí configuramos el valor predeterminado para la versión
+    defaultValue: 1,  // Valor predeterminado para la versión
   },
   estado: {
     type: DataTypes.STRING(20),

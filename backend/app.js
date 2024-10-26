@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const areaRoutes = require('./routes/areaRoutes');
 const tipoDocumentoRoutes = require('./routes/tipoDocumentoRoutes');
 const documentRoutes = require('./routes/documentRoutes');
+const auditoriaDocumentoRoutes = require('./routes/auditoriaDocsRoutes');
 
 const app = express();
 
@@ -23,8 +24,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/areas', areaRoutes);
 app.use('/api/tipos_documentos', tipoDocumentoRoutes);
 app.use('/api/documents', documentRoutes);
+app.use('/api/auditorias', auditoriaDocumentoRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://192.168.2.248:${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

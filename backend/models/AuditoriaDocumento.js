@@ -1,4 +1,4 @@
-// models/AuditoriaDocumento.js
+// src/models/AuditoriaDocumento.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const Usuario = require('./Usuario');
@@ -42,5 +42,9 @@ const AuditoriaDocumento = sequelize.define('AuditoriaDocumento', {
   timestamps: false,
   tableName: 'auditoria_documentos',
 });
+
+// Definir las relaciones
+AuditoriaDocumento.belongsTo(Usuario, { foreignKey: 'id_usuario', as: 'usuario' });
+AuditoriaDocumento.belongsTo(Documento, { foreignKey: 'id_documento', as: 'documento' });
 
 module.exports = AuditoriaDocumento;
