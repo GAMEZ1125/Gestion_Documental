@@ -41,16 +41,68 @@ const createDocument = async (req, res) => {
 // Actualizar un documento por ID
 const updateDocument = async (req, res) => {
   try {
-    const [updated] = await Documento.update(req.body, {
-      where: { id: req.params.id },
-    });
-    if (!updated) {
+    const documentId = req.params.id;
+    console.log('ID del documento a editar:', documentId);
+
+    const documentoOriginal = await Documento.findByPk(documentId);
+    if (!documentoOriginal) {
       return res.status(404).json({ message: 'Documento no encontrado.' });
     }
-    res.json({ message: 'Documento actualizado con éxito.' });
+
+    console.log('Documento original encontrado:', documentoOriginal);
+
+    // Cambia el estado del documento original
+    await Documento.update(
+      { estado: 'Versión antigua' },
+      { where: { id: documentId } }
+    );
+
+    // Nueva versión
+    const nuevaVersion = documentoOriginal.version + 1;
+
+    // Usa el título original para construir el nuevo nombre de archivo
+    const nombreOriginal = documentoOriginal.titulo.replace(/\s+/g, '-'); // Reemplaza espacios por guiones
+
+    // Obtiene la extensión del archivo original
+    const extensionOriginal = path.extname(documentoOriginal.ruta_archivo); // Extrae la extensión del archivo original
+    const nuevoNombre = `${nombreOriginal}-${nuevaVersion}${extensionOriginal}`; // Construye el nuevo nombre
+
+    const rutaArchivo = path.join(__dirname, '../uploads', nuevoNombre);
+
+    // Asegúrate de que la carpeta uploads exista
+    if (!fs.existsSync(path.join(__dirname, '../uploads'))) {
+      fs.mkdirSync(path.join(__dirname, '../uploads'), { recursive: true });
+    }
+
+    // Mueve el archivo a la nueva ruta
+    fs.rename(req.file.path, rutaArchivo, (err) => {
+      if (err) {
+        console.error('Error al guardar archivo:', err);
+        return res.status(500).json({ message: 'Error al guardar archivo.', error: err });
+      }
+
+      // Crea el nuevo documento con el nuevo nombre
+      Documento.create({
+        titulo: documentoOriginal.titulo, // Mantiene el título original
+        descripcion: documentoOriginal.descripcion,
+        contenido: null,
+        version: nuevaVersion,
+        estado: 'Borrador', // Cambia el estado según tu lógica
+        id_area: documentoOriginal.id_area,
+        id_tipo_documento: documentoOriginal.id_tipo_documento,
+        ruta_archivo: rutaArchivo,
+      })
+        .then((nuevoDocumento) => {
+          res.status(201).json(nuevoDocumento);
+        })
+        .catch((error) => {
+          console.error('Error al crear nuevo documento:', error);
+          res.status(500).json({ message: 'Error al crear nuevo documento.', error });
+        });
+    });
   } catch (error) {
-    console.error('Error al actualizar documento:', error);
-    res.status(500).json({ message: 'Error al actualizar documento.' });
+    console.error('Error al editar documento:', error);
+    res.status(500).json({ message: 'Error al editar documento.', error });
   }
 };
 

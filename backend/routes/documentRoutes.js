@@ -74,6 +74,30 @@ router.post('/', authenticateToken, upload.single('archivo'), async (req, res) =
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 });
+// Obtener un documento por ID
+router.get('/:id', authenticateToken, async (req, res) => {
+  try {
+    const documento = await Documento.findByPk(req.params.id);
+    if (!documento) {
+      return res.status(404).json({ message: 'Documento no encontrado.' });
+    }
+    res.json(documento);
+  } catch (error) {
+    console.error('Error al obtener documento:', error);
+    res.status(500).json({ message: 'Error interno del servidor.' });
+  }
+});
+// Función para obtener el prefijo del área basado en id_area
+async function obtenerPrefijoArea(id_area) {
+  const area = await Area.findByPk(id_area); // Asume que tienes el modelo Area importado
+  return area ? area.prefijo : ''; // Ajusta 'prefijo' al nombre correcto del campo en tu modelo
+}
+
+// Función para obtener el prefijo del tipo de documento basado en id_tipo_documento
+async function obtenerPrefijoTipoDocumento(id_tipo_documento) {
+  const tipoDoc = await TipoDocumento.findByPk(id_tipo_documento); // Asume que tienes el modelo TipoDocumento importado
+  return tipoDoc ? tipoDoc.prefijo : ''; // Ajusta 'prefijo' al nombre correcto del campo en tu modelo
+}
 
 // **Editar documento: Crear nueva versión**
 router.put('/edit/:id', authenticateToken, upload.single('archivo'), async (req, res) => {
@@ -81,42 +105,94 @@ router.put('/edit/:id', authenticateToken, upload.single('archivo'), async (req,
     const { titulo, descripcion, observaciones } = req.body;
     const userId = req.user.id;
 
+    // Verificar si se pasó un ID válido
+    console.log('ID del documento a editar:', req.params.id);
+
     const documentoOriginal = await Documento.findByPk(req.params.id);
-    if (!documentoOriginal) return res.status(404).json({ message: 'Documento no encontrado.' });
+    if (!documentoOriginal) {
+      console.error('Documento no encontrado con ID:', req.params.id);
+      return res.status(404).json({ message: 'Documento no encontrado.' });
+    }
+
+    console.log('Documento original encontrado:', documentoOriginal.toJSON());
+
+    // Cambiar el estado del documento original a 'Versión antigua' si estaba aprobado
+    if (documentoOriginal.estado === 'Aprobado') {
+      documentoOriginal.estado = 'Versión antigua';
+      await documentoOriginal.save();
+      console.log('Estado del documento original cambiado a "Versión antigua"');
+    }
 
     const nuevaVersion = documentoOriginal.version + 1;
-    const extension = req.file.originalname.split('.').pop();
-    const nuevoNombre = `${documentoOriginal.ruta_archivo.split('-')[0]}-${titulo}-${nuevaVersion}.${extension}`;
-    const rutaArchivo = path.join(__dirname, '../uploads', nuevoNombre);
+    const extension = req.file ? req.file.originalname.split('.').pop() : 'pdf'; // Valor por defecto
 
-    fs.writeFile(rutaArchivo, req.file.buffer, async (err) => {
-      if (err) return res.status(500).json({ message: 'Error al guardar archivo.' });
+    // Obtener prefijos de área y tipo de documento
+    const prefijoArea = await obtenerPrefijoArea(documentoOriginal.id_area); // Cambiado para obtener prefijo
+    const prefijoTipoDocumento = await obtenerPrefijoTipoDocumento(documentoOriginal.id_tipo_documento); // Cambiado para obtener prefijo
 
-      const nuevoDocumento = await Documento.create({
-        titulo,
-        descripcion,
-        version: nuevaVersion,
-        estado: 'Borrador',
-        id_area: documentoOriginal.id_area,
-        id_tipo_documento: documentoOriginal.id_tipo_documento,
-        ruta_archivo: `uploads/${nuevoNombre}`,
+    // Modificado: Agregar prefijos y consecutivo al nuevo nombre
+    const consecutivo = documentoOriginal.ruta_archivo.split('-')[2]; // Obtener el consecutivo del documento original
+    const nuevoNombre = `${prefijoArea}-${prefijoTipoDocumento}-${consecutivo}-${titulo}-${nuevaVersion}.${extension}`;
+    const rutaArchivo = path.join(__dirname, '../uploads', nuevoNombre); // Ruta correcta del archivo
+
+    // Si se subió un archivo, guarda la nueva versión
+    if (req.file) {
+      fs.writeFile(rutaArchivo, req.file.buffer, async (err) => {
+        if (err) {
+          console.error('Error al guardar archivo:', err);
+          return res.status(500).json({ message: 'Error al guardar archivo.' });
+        }
+
+        console.log('Archivo guardado en:', rutaArchivo);
+
+        const nuevoDocumento = await Documento.create({
+          titulo,
+          descripcion,
+          version: nuevaVersion,
+          estado: 'Borrador',
+          id_area: documentoOriginal.id_area,
+          id_tipo_documento: documentoOriginal.id_tipo_documento,
+          ruta_archivo: `uploads/${nuevoNombre}`, // Ruta relativa para almacenar en la base de datos
+        });
+
+        console.log('Nuevo documento creado:', nuevoDocumento.toJSON());
+
+        // Registrar auditoría
+        await AuditoriaDocumento.create({
+          accion: 'Edición',
+          observaciones,
+          id_usuario: userId,
+          id_documento: nuevoDocumento.id,
+        });
+
+        res.json({ message: 'Documento editado con éxito.', documento: nuevoDocumento });
       });
+    } else {
+      // Si no hay archivo, solo actualizar otros campos
+      documentoOriginal.titulo = titulo;
+      documentoOriginal.descripcion = descripcion;
+      documentoOriginal.version = nuevaVersion;
+
+      await documentoOriginal.save();
+      console.log('Documento actualizado sin nuevo archivo:', documentoOriginal.toJSON());
 
       // Registrar auditoría
       await AuditoriaDocumento.create({
-        accion: 'Edición',
+        accion: 'Edición sin archivo',
         observaciones,
         id_usuario: userId,
-        id_documento: nuevoDocumento.id,
+        id_documento: documentoOriginal.id,
       });
 
-      res.json({ message: 'Documento editado con éxito.', documento: nuevoDocumento });
-    });
+      res.json({ message: 'Documento editado con éxito.', documento: documentoOriginal });
+    }
   } catch (error) {
     console.error('Error al editar documento:', error);
     res.status(500).json({ message: 'Error interno del servidor.' });
   }
 });
+
+
 
 // Verificar si un archivo existe
 const fileExists = (filePath) => {
