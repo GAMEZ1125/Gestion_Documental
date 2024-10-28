@@ -114,6 +114,7 @@ const UserForm = () => {
           >
             <option value="">Seleccione un rol</option>
             <option value="admin">Admin</option>
+            <option value="editor">Editor</option>
             <option value="usuario">Usuario</option>
           </select>
         </div>
