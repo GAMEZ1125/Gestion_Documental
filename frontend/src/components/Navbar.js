@@ -77,7 +77,7 @@ const Navbar = () => {
             {(userRole === 'admin' || userRole === 'editor') && (
               <li className="nav-item">
                 <Link className="nav-link" to="/auditorias">
-                  Auditorías
+                  Registros de Cambios
                 </Link>
               </li>
             )}

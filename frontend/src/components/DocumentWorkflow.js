@@ -1,12 +1,11 @@
-// src/pages/DocumentWorkflow.js
 import React, { useEffect, useState } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap'; 
+import { Modal, Button, Form } from 'react-bootstrap';
 import api from '../services/api';
 
 const DocumentWorkflow = () => {
   const [documents, setDocuments] = useState([]);
-  const [selectedDocument, setSelectedDocument] = useState(null); 
-  const [observaciones, setObservaciones] = useState(''); 
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [observaciones, setObservaciones] = useState('');
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -21,6 +20,24 @@ const DocumentWorkflow = () => {
     fetchDocuments();
   }, []);
 
+  // Función para descargar archivos
+  const handleDownload = async (filename) => {
+    try {
+      const response = await api.get(`/documents/download/${filename}`, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error al descargar el archivo:', error);
+      alert('El archivo no se pudo descargar.');
+    }
+  };
+
+  // Función para aprobar documentos
   const handleApprove = async (id) => {
     try {
       await api.put(`/documents/${id}`, { estado: 'Aprobado' });
@@ -32,8 +49,8 @@ const DocumentWorkflow = () => {
   };
 
   const openRejectModal = (document) => {
-    setSelectedDocument(document); 
-    setShowModal(true); 
+    setSelectedDocument(document);
+    setShowModal(true);
   };
 
   const handleReject = async () => {
@@ -48,8 +65,8 @@ const DocumentWorkflow = () => {
       });
       alert('Documento rechazado y eliminado.');
       setDocuments(documents.filter((doc) => doc.id !== selectedDocument.id));
-      setShowModal(false); 
-      setObservaciones(''); 
+      setShowModal(false);
+      setObservaciones('');
     } catch (error) {
       console.error('Error al rechazar documento:', error);
       alert('Error al rechazar el documento.');
@@ -59,27 +76,41 @@ const DocumentWorkflow = () => {
   return (
     <div className="container mt-5">
       <h2>Workflow de Documentos</h2>
-      <ul className="list-group">
-        {documents.map((doc) => (
-          <li key={doc.id} className="list-group-item d-flex justify-content-between align-items-center">
-            <span>{doc.titulo}</span>
-            <div>
-              <button
-                className="btn btn-success btn-sm me-2"
-                onClick={() => handleApprove(doc.id)}
-              >
-                Aprobar
-              </button>
-              <button
-                className="btn btn-danger btn-sm"
-                onClick={() => openRejectModal(doc)}
-              >
-                Rechazar
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <table className="table table-striped">
+        <thead>
+          <tr>
+            <th>Título</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {documents.map((doc) => (
+            <tr key={doc.id}>
+              <td>{doc.titulo}</td>
+              <td>
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={() => handleDownload(doc.ruta_archivo.split('/').pop())}
+                >
+                  Descargar
+                </button>
+                <button
+                  className="btn btn-success btn-sm me-2"
+                  onClick={() => handleApprove(doc.id)}
+                >
+                  Aprobar
+                </button>
+                <button
+                  className="btn btn-danger btn-sm"
+                  onClick={() => openRejectModal(doc)}
+                >
+                  Rechazar
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
       {/* Modal para observaciones */}
       <Modal show={showModal} onHide={() => setShowModal(false)}>

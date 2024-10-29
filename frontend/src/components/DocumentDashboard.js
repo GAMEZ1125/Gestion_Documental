@@ -1,47 +1,65 @@
-// src/components/DocumentDashboard.js
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import '../css/DocumentDashboard.css';
+import crearDocumentoImg from '../assets/images/create-image.webp';
+import buscarDocumentoImg from '../assets/images/view-image.webp';
+import workflowDocumentoImg from '../assets/images/workflow-image.webp';
+import manageDocumentoImg from '../assets/images/manage-image.webp';
 
 const DocumentDashboard = () => {
   const [userRole, setUserRole] = useState('');
   const navigate = useNavigate();
 
-  // Extraer el rol del token
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      navigate('/login'); // Redirigir si no hay token
+      navigate('/login');
       return;
     }
 
-    const { rol } = JSON.parse(atob(token.split('.')[1])); // Decodificar token
+    const { rol } = JSON.parse(atob(token.split('.')[1]));
     setUserRole(rol);
   }, [navigate]);
 
   return (
-    <div className="container mt-5">
+    <div className="dashboard-container">
       <h2>Documentos</h2>
 
-      {(userRole === 'admin' || userRole === 'usuario' || userRole === 'editor') && (
-        <Link to="/documents/new" className="btn btn-primary mb-3">
-          Crear Documento
+      <div className="card-container">
+        {(userRole === 'admin' || userRole === 'usuario' || userRole === 'editor') && (
+          <Link to="/documents/new" className="card">
+            <div className="card-content">
+              <img src={crearDocumentoImg} alt="Crear Documento" className="document-image" />
+              <p>Crear Documento</p>
+            </div>
+          </Link>
+        )}
+
+        <Link to="/documents/view" className="card">
+          <div className="card-content">
+            <img src={buscarDocumentoImg} alt="Consultar Documentos" />
+            <p>Consultar Documentos Aprobados</p>
+          </div>
         </Link>
-      )}
 
-      <Link to="/documents/view" className="btn btn-secondary mb-3">
-        Consultar Documentos Aprobados
-      </Link>
+        {userRole !== 'usuario' && (
+          <>
+            <Link to="/documents/workflow" className="card">
+              <div className="card-content">
+                <img src={workflowDocumentoImg} alt="Workflow de Documentos" />
+                <p>Workflow de Documentos</p>
+              </div>
+            </Link>
 
-      {userRole !== 'usuario' && (
-        <>
-          <Link to="/documents/workflow" className="btn btn-info mb-3">
-            Workflow de Documentos
-          </Link>
-          <Link to="/documents/management" className="btn btn-warning mb-3">
-            Gestionar Documentos
-          </Link>
-        </>
-      )}
+            <Link to="/documents/management" className="card">
+              <div className="card-content">
+                <img src={manageDocumentoImg} alt="Gestionar Documentos" />
+                <p>Gestionar Documentos</p>
+              </div>
+            </Link>
+          </>
+        )}
+      </div>
     </div>
   );
 };
