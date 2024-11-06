@@ -1,3 +1,4 @@
+// app.js
 const express = require('express');
 const cors = require('cors');
 const path = require('path'); // Asegúrate de importar 'path'
@@ -7,6 +8,7 @@ const areaRoutes = require('./routes/areaRoutes');
 const tipoDocumentoRoutes = require('./routes/tipoDocumentoRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const auditoriaDocumentoRoutes = require('./routes/auditoriaDocsRoutes');
+const usuarioAreaRoutes = require('./routes/usuarioAreaRoutes');
 
 const app = express();
 
@@ -25,6 +27,7 @@ app.use('/api/areas', areaRoutes);
 app.use('/api/tipos_documentos', tipoDocumentoRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/auditorias', auditoriaDocumentoRoutes);
+app.use('/api/usuarios-areas', usuarioAreaRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

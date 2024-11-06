@@ -20,6 +20,8 @@ import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout'; // Importar el layout global
+import UserAreasManagement from './components/UserAreasManagement';
+
 
 const App = () => {
   return (
@@ -54,6 +56,7 @@ const App = () => {
           <Route path="documents/edit/:id" element={<DocumentEdit />} />
           <Route path="documents/management" element={<DocumentManagement />} />
           <Route path="auditorias" element={<DocumentAudit />} />
+          <Route path="/usuarios-areas/:userId/areas" element={<UserAreasManagement />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

@@ -71,13 +71,13 @@ const Dashboard = () => {
     <div className="containerMain">
       <div>
         <h2>Documentos</h2>
-        {(userRole === 'admin' || userRole === 'usuario') && (
+        {/* {(userRole === 'admin' || userRole === 'usuario') && (
           <Link to="/documents/new" className="btn btn-primary mb-3">
             Crear Documento
           </Link>
-        )}
+        )} */}
 
-        {userRole === 'admin' && (
+        {/* {userRole === 'admin' && (
           <>
             <Link to="/users" className="btn btn-primary mb-3">
               Gestionar Usuarios
@@ -89,7 +89,7 @@ const Dashboard = () => {
               Gestionar Tipos de Documentos
             </Link>
           </>
-        )}
+        )} */}
       </div>
 
 

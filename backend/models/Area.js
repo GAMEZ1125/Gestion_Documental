@@ -1,12 +1,14 @@
 // models/Area.js
-const { DataTypes } = require('sequelize');
+const { Model, DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 
-const Area = sequelize.define('Area', {
+class Area extends Model {}
+
+Area.init({
   id: {
     type: DataTypes.INTEGER,
-    primaryKey: true,
     autoIncrement: true,
+    primaryKey: true,
   },
   nombre: {
     type: DataTypes.STRING(50),
@@ -18,11 +20,15 @@ const Area = sequelize.define('Area', {
   },
   prefijo: {
     type: DataTypes.STRING(10),
-    allowNull: false,
+    allowNull: true,
   },
 }, {
-  timestamps: true,
-  tableName: 'areas',
+  sequelize,
+  modelName: 'Area',
 });
+
+Area.associate = (models) => {
+  Area.hasMany(models.UsuarioArea, { foreignKey: 'id_area' });
+};
 
 module.exports = Area;

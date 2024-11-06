@@ -1,3 +1,4 @@
+// config/database.js
 const { Sequelize } = require('sequelize');
 require('dotenv').config(); // Importar el archivo .env
 

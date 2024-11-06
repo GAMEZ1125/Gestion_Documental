@@ -39,7 +39,7 @@ const UserDashboard = () => {
   const handleSearchChange = (event) => {
     const { value } = event.target;
     setSearchTerm(value);
-    const filtered = users.filter(user => 
+    const filtered = users.filter(user =>
       user.nombre.toLowerCase().includes(value.toLowerCase()) ||
       user.correo_electronico.toLowerCase().includes(value.toLowerCase()) ||
       user.rol.toLowerCase().includes(value.toLowerCase())
@@ -53,12 +53,12 @@ const UserDashboard = () => {
       <Link to="/users/new" className="btn btn-primary mb-3">
         Crear Usuario
       </Link>
-      <input 
-        type="text" 
-        className="form-control mb-3" 
-        placeholder="Buscar por nombre, correo o rol..." 
-        value={searchTerm} 
-        onChange={handleSearchChange} 
+      <input
+        type="text"
+        className="form-control mb-3"
+        placeholder="Buscar por nombre, correo o rol..."
+        value={searchTerm}
+        onChange={handleSearchChange}
       />
       <table className="table table-striped">
         <thead>
@@ -83,11 +83,18 @@ const UserDashboard = () => {
                   Editar
                 </button>
                 <button
-                  className="btn btn-danger btn-sm"
+                  className="btn btn-danger btn-sm me-2"
                   onClick={() => handleDelete(user.id)}
                 >
                   Eliminar
                 </button>
+                <button
+                  className="btn btn-info btn-sm"
+                  onClick={() => navigate(`/usuarios-areas/${user.id}/areas`)} // Asegúrate de que esta ruta esté configurada
+                >
+                  Gestionar Áreas
+                </button>
+
               </td>
             </tr>
           ))}
