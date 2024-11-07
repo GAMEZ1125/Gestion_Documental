@@ -1,4 +1,4 @@
-// src/controllers/userController.js
+//controllers/userController.js
 const Usuario = require('../models/Usuario');
 const bcrypt = require('bcryptjs'); // Encriptación de contraseñas
 

@@ -1,3 +1,4 @@
+// src/components/Navbar.js
 import React, { useState, useEffect } from 'react'; // Importa useState y useEffect
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';

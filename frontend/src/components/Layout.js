@@ -1,3 +1,4 @@
+// src/components/Layout.js
 import React from 'react';
 import Navbar from './Navbar'; // Importar el Navbar
 import { Outlet } from 'react-router-dom'; // Componente para renderizar rutas hijas

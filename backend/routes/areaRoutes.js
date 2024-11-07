@@ -1,3 +1,4 @@
+// /routes/areaRoutes.js
 const express = require('express');
 const {
   getAreas,
