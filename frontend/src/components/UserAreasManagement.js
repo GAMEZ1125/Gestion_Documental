@@ -5,7 +5,7 @@ import api from '../services/api';
 
 const UserAreasManagement = () => {
   const { userId } = useParams(); // Obtiene el ID del usuario de los parámetros de la URL
-  const [areas, setAreas] = useState([]); // Estado para las áreas
+  const [areas, setAreas] = useState([]); // Estado para las áreas disponibles
   const [userAreas, setUserAreas] = useState([]); // Estado para las áreas asociadas al usuario
   const [selectedAreas, setSelectedAreas] = useState([]); // Estado para áreas seleccionadas
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ const UserAreasManagement = () => {
   useEffect(() => {
     const fetchAreas = async () => {
       try {
-        const response = await api.get('/areas'); // Asegúrate de tener la ruta para obtener áreas
+        const response = await api.get('/areas');
         setAreas(response.data);
       } catch (error) {
         console.error('Error al obtener áreas:', error);
@@ -23,16 +23,14 @@ const UserAreasManagement = () => {
 
     const fetchUserAreas = async () => {
       try {
-        const response = await api.get(`/usuarios-areas/${userId}/areas`); // Cambia la ruta aquí
-        // Asumiendo que la respuesta tiene la forma [{ id, nombre }, ...]
-        const associatedAreas = response.map(area => area.id); // Cambia aquí para obtener el ID directamente
-        setUserAreas(associatedAreas);
-        setSelectedAreas(associatedAreas);
+        const response = await api.get(`/usuarios-areas/${userId}/areas`);
+        setUserAreas(response.data); // Asumiendo que el formato es [{ id, nombre }]
+        setSelectedAreas(response.data.map(area => area.id));
       } catch (error) {
         console.error('Error al obtener áreas del usuario:', error);
       }
     };
-    
+
     fetchAreas();
     fetchUserAreas();
   }, [userId]);
@@ -49,8 +47,8 @@ const UserAreasManagement = () => {
   // Función para guardar cambios
   const handleSaveChanges = async () => {
     try {
-      const areasToAdd = selectedAreas.filter(areaId => !userAreas.includes(areaId));
-      const areasToRemove = userAreas.filter(areaId => !selectedAreas.includes(areaId));
+      const areasToAdd = selectedAreas.filter(areaId => !userAreas.map(area => area.id).includes(areaId));
+      const areasToRemove = userAreas.map(area => area.id).filter(areaId => !selectedAreas.includes(areaId));
 
       // Agregar áreas
       if (areasToAdd.length > 0) {
@@ -63,7 +61,7 @@ const UserAreasManagement = () => {
       }
 
       // Actualiza el estado de áreas asociadas
-      setUserAreas(selectedAreas);
+      setUserAreas(areas.filter(area => selectedAreas.includes(area.id)));
       alert('Cambios guardados con éxito.');
     } catch (error) {
       console.error('Error al guardar cambios:', error);
@@ -71,14 +69,28 @@ const UserAreasManagement = () => {
     }
   };
 
+  // Función para eliminar un área asociada al usuario
+  const handleRemoveUserArea = async (areaId) => {
+    try {
+      await api.delete(`/usuarios-areas/${userId}/areas/${areaId}`);
+      setUserAreas(userAreas.filter(area => area.id !== areaId));
+      setSelectedAreas(selectedAreas.filter(id => id !== areaId));
+      alert('Área eliminada del usuario con éxito.');
+    } catch (error) {
+      console.error('Error al eliminar el área:', error);
+      alert('Error al eliminar el área.');
+    }
+  };
+
   return (
     <div className="container mt-5">
       <h2>Gestión de Áreas para Usuario</h2>
       <button className="btn btn-secondary mb-3" onClick={() => navigate('/users')}>Volver a la gestión de usuarios</button>
+      
       <h4>Áreas Disponibles</h4>
       <ul className="list-group mb-4">
         {areas.map(area => (
-          <li key={area.id} className="list-group-item">
+          <li key={area.id} className="list-group-item d-flex justify-content-between align-items-center">
             <input
               type="checkbox"
               checked={selectedAreas.includes(area.id)}
@@ -88,7 +100,30 @@ const UserAreasManagement = () => {
           </li>
         ))}
       </ul>
-      <button className="btn btn-primary" onClick={handleSaveChanges}>Guardar Cambios</button>
+      
+      <button className="btn btn-primary mb-5" onClick={handleSaveChanges}>Guardar Cambios</button>
+      
+      <h4>Áreas Asociadas al Usuario</h4>
+      <table className="table table-bordered">
+        <thead>
+          <tr>
+            <th>Nombre del Área</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          {userAreas.map(area => (
+            <tr key={area.id}>
+              <td>{area.nombre}</td>
+              <td>
+                <button className="btn btn-danger" onClick={() => handleRemoveUserArea(area.id)}>
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-// src/components/DocumentForm.js
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
@@ -11,25 +10,40 @@ const DocumentForm = () => {
   const [tiposDocumento, setTiposDocumento] = useState([]);
   const [idArea, setIdArea] = useState('');
   const [idTipoDocumento, setIdTipoDocumento] = useState('');
-  const [consecutivo, setConsecutivo] = useState(0); // Consecutivo dinámico
+  const [consecutivo, setConsecutivo] = useState(0);
   const navigate = useNavigate();
 
-  // Cargar Áreas y Tipos de Documento al montar el componente
+  // Cargar Áreas asignadas al usuario y Tipos de Documento al montar el componente
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [areasResponse, tiposResponse] = await Promise.all([
-          api.get('/areas'),
+        // Obtener el ID del usuario del token
+        const token = localStorage.getItem('token');
+        const { id: userId } = JSON.parse(atob(token.split('.')[1]));
+
+        // Realizar las peticiones en paralelo
+        const [userAreasResponse, tiposResponse] = await Promise.all([
+          api.get(`/usuarios-areas/${userId}/areas`),
           api.get('/tipos_documentos'),
         ]);
-        setAreas(areasResponse.data);
+
+        // Establecer las áreas del usuario y tipos de documento
+        setAreas(userAreasResponse.data);
         setTiposDocumento(tiposResponse.data);
+
+        // Si el usuario solo tiene un área asignada, seleccionarla automáticamente
+        if (userAreasResponse.data.length === 1) {
+          setIdArea(userAreasResponse.data[0].id.toString());
+        }
       } catch (error) {
-        console.error('Error al cargar áreas o tipos de documentos:', error);
+        console.error('Error al cargar datos:', error);
+        if (error.response?.status === 401) {
+          navigate('/login');
+        }
       }
     };
     fetchData();
-  }, []);
+  }, [navigate]);
 
   // Calcular el consecutivo al cambiar el área o tipo de documento
   useEffect(() => {
@@ -50,6 +64,12 @@ const DocumentForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!archivo) {
+      alert('Por favor seleccione un archivo.');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('titulo', titulo);
     formData.append('descripcion', descripcion);
@@ -58,28 +78,36 @@ const DocumentForm = () => {
     formData.append('id_tipo_documento', idTipoDocumento);
 
     try {
-      const response = await api.post('/documents', formData, {
+      await api.post('/documents', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      console.log('Documento creado:', response.data);
+      alert('Documento creado exitosamente');
       navigate('/dashboard');
     } catch (error) {
       console.error('Error al crear el documento:', error);
-      alert('Error al crear el documento.');
+      alert(error.response?.data?.message || 'Error al crear el documento.');
     }
   };
 
   return (
     <div className="container mt-5">
       <h2>Crear Documento</h2>
+      
+      {areas.length === 0 && (
+        <div className="alert alert-warning">
+          No tiene áreas asignadas. Por favor contacte al administrador.
+        </div>
+      )}
+
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
-          <label>Área</label>
+          <label className="form-label">Área</label>
           <select
             className="form-control"
             value={idArea}
             onChange={(e) => setIdArea(e.target.value)}
             required
+            disabled={areas.length === 1} // Deshabilitar si solo hay un área
           >
             <option value="">Seleccione un área</option>
             {areas.map((area) => (
@@ -91,7 +119,7 @@ const DocumentForm = () => {
         </div>
 
         <div className="mb-3">
-          <label>Tipo de Documento</label>
+          <label className="form-label">Tipo de Documento</label>
           <select
             className="form-control"
             value={idTipoDocumento}
@@ -108,7 +136,7 @@ const DocumentForm = () => {
         </div>
 
         <div className="mb-3">
-          <label>Título</label>
+          <label className="form-label">Título</label>
           <input
             type="text"
             className="form-control"
@@ -119,7 +147,7 @@ const DocumentForm = () => {
         </div>
 
         <div className="mb-3">
-          <label>Consecutivo</label>
+          <label className="form-label">Consecutivo</label>
           <input
             type="text"
             className="form-control"
@@ -129,16 +157,17 @@ const DocumentForm = () => {
         </div>
 
         <div className="mb-3">
-          <label>Descripción</label>
+          <label className="form-label">Descripción</label>
           <textarea
             className="form-control"
             value={descripcion}
             onChange={(e) => setDescripcion(e.target.value)}
+            rows="3"
           />
         </div>
 
         <div className="mb-3">
-          <label>Archivo</label>
+          <label className="form-label">Archivo</label>
           <input
             type="file"
             className="form-control"
@@ -147,7 +176,11 @@ const DocumentForm = () => {
           />
         </div>
 
-        <button type="submit" className="btn btn-primary">
+        <button 
+          type="submit" 
+          className="btn btn-primary"
+          disabled={areas.length === 0}
+        >
           Crear Documento
         </button>
       </form>

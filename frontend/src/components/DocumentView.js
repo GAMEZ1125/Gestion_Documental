@@ -7,16 +7,34 @@ const DocumentView = () => {
   const [filteredDocuments, setFilteredDocuments] = useState([]);
   const [areas, setAreas] = useState([]);
   const [tiposDocumentos, setTiposDocumentos] = useState([]);
-  const [searchTitle, setSearchTitle] = useState(''); // Estado para el filtro del título
+  const [searchTitle, setSearchTitle] = useState('');
+  const [userAreas, setUserAreas] = useState([]); // Nueva estado para áreas del usuario
 
   useEffect(() => {
-    const fetchDocuments = async () => {
+    const fetchUserData = async () => {
       try {
-        const response = await api.get('/documents?estado=Aprobado');
-        setDocuments(response.data);
-        setFilteredDocuments(response.data); // Inicialmente mostrar todos los documentos
+        // Obtener el ID del usuario del token
+        const token = localStorage.getItem('token');
+        const { id: userId } = JSON.parse(atob(token.split('.')[1]));
+
+        // Obtener las áreas asignadas al usuario
+        const userAreasResponse = await api.get(`/usuarios-areas/${userId}/areas`);
+        setUserAreas(userAreasResponse.data);
+
+        // Obtener documentos
+        const documentsResponse = await api.get('/documents?estado=Aprobado');
+        const allDocuments = documentsResponse.data;
+
+        // Filtrar documentos por áreas del usuario
+        const userAreaIds = userAreasResponse.data.map(area => area.id);
+        const filteredDocs = allDocuments.filter(doc => 
+          userAreaIds.includes(doc.id_area)
+        );
+
+        setDocuments(filteredDocs);
+        setFilteredDocuments(filteredDocs);
       } catch (error) {
-        console.error('Error al obtener documentos aprobados:', error);
+        console.error('Error al obtener datos:', error);
       }
     };
 
@@ -38,7 +56,7 @@ const DocumentView = () => {
       }
     };
 
-    fetchDocuments();
+    fetchUserData();
     fetchAreas();
     fetchTiposDocumentos();
   }, []);
@@ -69,7 +87,6 @@ const DocumentView = () => {
     return tipoDocumento ? tipoDocumento.nombre : 'Desconocido';
   };
 
-  // Función para filtrar documentos por título
   const handleSearchChange = (event) => {
     const { value } = event.target;
     setSearchTitle(value);
@@ -82,6 +99,16 @@ const DocumentView = () => {
   return (
     <div className="container mt-5">
       <h2>Consulta de Documentos Aprobados</h2>
+      <div className="mb-3">
+        <h5>Áreas asignadas:</h5>
+        <ul className="list-inline">
+          {userAreas.map(area => (
+            <li key={area.id} className="list-inline-item badge bg-secondary me-2">
+              {area.nombre}
+            </li>
+          ))}
+        </ul>
+      </div>
       <input 
         type="text" 
         className="form-control mb-3" 
