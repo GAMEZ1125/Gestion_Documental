@@ -9,6 +9,7 @@ const tipoDocumentoRoutes = require('./routes/tipoDocumentoRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const auditoriaDocumentoRoutes = require('./routes/auditoriaDocsRoutes');
 const usuarioAreaRoutes = require('./routes/usuarioAreaRoutes');
+const emailConfigRoutes = require('./routes/emailConfig');
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use('/api/tipos_documentos', tipoDocumentoRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/auditorias', auditoriaDocumentoRoutes);
 app.use('/api/usuarios-areas', usuarioAreaRoutes);
+app.use('/api', emailConfigRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

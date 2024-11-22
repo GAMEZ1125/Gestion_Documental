@@ -21,6 +21,7 @@ import NotFound from './pages/NotFound';
 import PrivateRoute from './components/PrivateRoute';
 import Layout from './components/Layout'; // Importar el layout global
 import UserAreasManagement from './components/UserAreasManagement';
+import EmailConfig from './components/EmailConfig';
 
 
 const App = () => {
@@ -57,6 +58,7 @@ const App = () => {
           <Route path="documents/management" element={<DocumentManagement />} />
           <Route path="auditorias" element={<DocumentAudit />} />
           <Route path="/usuarios-areas/:userId/areas" element={<UserAreasManagement />} />
+          <Route path="/email-config" element={<EmailConfig />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

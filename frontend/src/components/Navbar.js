@@ -82,6 +82,13 @@ const Navbar = () => {
                 </Link>
               </li>
             )}
+            {(userRole === 'admin') && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/email-config">
+                  Configuración de Correo
+                </Link>
+              </li>
+            )}
           </ul>
           <button className="btn btn-outline-light" onClick={handleLogout}>
             Cerrar Sesión
