@@ -1,4 +1,4 @@
-// src/models/EmailConfig.js
+// models/EmailConfig.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 

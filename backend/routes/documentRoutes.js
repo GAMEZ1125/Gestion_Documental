@@ -9,6 +9,10 @@ const Documento = require('../models/Documento');
 const Area = require('../models/Area');
 const TipoDocumento = require('../models/TipoDocumento');
 const AuditoriaDocumento = require('../models/AuditoriaDocumento');
+const { sendEmail } = require('../utils/emailSender');
+const Usuario = require('../models/Usuario');
+const { image } = require('pdfkit');
+const doc = require('pdfkit');
 
 const router = express.Router();
 
@@ -66,6 +70,56 @@ router.post('/', authenticateToken, upload.single('archivo'), async (req, res) =
         id_usuario: userId,
         id_documento: documento.id,
       });
+      // Enviar notificaciones
+      try {
+        const creador = await Usuario.findByPk(userId);
+
+        const adminsYEditores = await Usuario.findAll({
+          where: {
+            rol: ['admin', 'editor'],
+          },
+        });
+
+        const adminEmails = adminsYEditores.map((usuario) => usuario.correo_electronico);
+
+        const subject = 'Nuevo documento creado';
+
+        const htmlCreador = `
+          <p>Hola ${creador.nombre},</p>
+          <p>Tu documento "<b>${titulo}</b>" ha sido creado exitosamente y está pendiente de revisión.
+          <p>Detalles del documento:</p>
+          <ul>
+            <li>Título: ${titulo}</li>
+            <li>Versión: ${version}</li>
+          </ul>
+          <p>Te notificaremos cuando el documento haya sido revisado.</p>
+          <img src="https://i.ibb.co/pxN29M4/firma.webp" alt="Firma" style="max-width: 300px; margin-top: 20px;">
+          </p>`
+          ;
+
+        const htmlAdminEditor = `
+          <p>Se ha creado el documento "<b>${titulo}</b>" por el usuario ${creador.nombre} y está pendiente de revisión.
+          <p>Detalles del documento:</p>
+          <ul>
+            <li>Título: ${titulo}</li>
+            <li>Versión: ${version}</li>
+          </ul>
+          <img src="https://i.ibb.co/pxN29M4/firma.webp" alt="Firma" style="max-width: 300px; margin-top: 20px;">
+          </p>`;
+
+        await sendEmail(creador.correo_electronico, subject, '', htmlCreador);
+
+        for (const email of adminEmails) {
+          await sendEmail(email, subject, '', htmlAdminEditor);
+          console.log(`Notificación enviada a: ${email}`);
+        }
+
+        console.log('Notificaciones enviadas exitosamente.');
+      } catch (error) {
+        console.error('Error al enviar notificaciones:', error.message);
+      }
+
+
 
       res.status(201).json({ message: 'Documento creado con éxito.', documento });
     });
@@ -222,6 +276,41 @@ router.put('/reject/:id', authenticateToken, async (req, res) => {
       id_usuario: userId,
       id_documento: documento.id,
     });
+    // Enviar notificaciones
+    try {
+      const creador = await Usuario.findByPk(userId); // Obtener el usuario que creó el documento
+      const editores = await Usuario.findAll({
+        where: {
+          rol: 'editor',
+        },
+      }); // Obtener todos los editores del documento (incluyendo el creador)
+      const editoresEmails = editores.map((editor) => editor.correo_electronico); // Obtener los emails de los editores
+      const subject = `Rechazo del documento`; // Asunto del correo
+      const html = `
+        <p>Hola ${creador.nombre},</p>
+        <p>El documento "<b>${documento.titulo}</b>" ha sido rechazado.</p>
+        <p>Detalles del documento:</p>
+        <ul>
+          <li>Título: ${documento.titulo}</li>
+          <li>Observaciones: ${observaciones}</li>
+          <li>Versión: ${documento.version}</li>
+          <li>Estado: ${documento.estado}</li>
+        </ul>
+        <p>Los editores del documento son:</p>
+        <ul>
+          ${editoresEmails.map((email) => `<li>${email}</li>`).join('')}
+        </ul>
+        <img src="https://i.ibb.co/pxN29M4/firma.webp" alt="Firma" style="max-width: 300px; margin-top: 20px;">
+        </p>`;
+      await sendEmail(creador.correo_electronico, subject, '', html);
+      for (const email of editoresEmails) {
+        await sendEmail(email, subject, '', html);
+        console.log(`Notificación enviada a: ${email}`);
+      }
+      console.log('Notificaciones enviadas exitosamente.');
+    } catch (error) {
+      console.error('Error al enviar notificaciones:', error.message);
+    }
 
     if (archivoExiste) {
       fs.unlink(rutaArchivo, (err) => {
@@ -276,6 +365,40 @@ router.put('/:id', authenticateToken, async (req, res) => {
       id_usuario: userId,
       id_documento: documento.id,
     });
+    // Enviar notificaciones
+    try {
+      const creador = await Usuario.findByPk(userId); // Obtener el usuario que creó el documento
+      const editores = await Usuario.findAll({
+        where: {
+          rol: 'editor',
+        },
+      }); // Obtener todos los editores del documento (incluyendo el creador)
+      const editoresEmails = editores.map((editor) => editor.correo_electronico); // Obtener los emails de los editores
+      const subject = `Cambio de estado a ${estado}`; // Asunto del correo
+      const html = `
+        <p>Hola ${creador.nombre},</p>
+        <p>El estado del documento "<b>${documento.titulo}</b>" ha cambiado a "<b>${estado}</b>".</p>
+        <p>Detalles del documento:</p>
+        <ul>
+          <li>Título: ${documento.titulo}</li>
+          <li>Versión: ${documento.version}</li>
+          <li>Estado: ${documento.estado}</li>
+        </ul>
+        <p>Los editores del documento son:</p>
+        <ul>
+          ${editoresEmails.map((email) => `<li>${email}</li>`).join('')}
+        </ul>
+        <img src="https://i.ibb.co/pxN29M4/firma.webp" alt="Firma" style="max-width: 300px; margin-top: 20px;">
+        </p>`;
+      await sendEmail(creador.correo_electronico, subject, '', html);
+      for (const email of editoresEmails) {
+        await sendEmail(email, subject, '', html);
+        console.log(`Notificación enviada a: ${email}`);
+      }
+      console.log('Notificaciones enviadas exitosamente.');
+    } catch (error) {
+      console.error('Error al enviar notificaciones:', error.message);
+    }
 
     res.json({ message: 'Documento actualizado.', documento });
   } catch (error) {
