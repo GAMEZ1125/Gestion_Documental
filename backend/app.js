@@ -31,7 +31,7 @@ app.use('/api/auditorias', auditoriaDocumentoRoutes);
 app.use('/api/usuarios-areas', usuarioAreaRoutes);
 app.use('/api', emailConfigRoutes);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4005;
 app.listen(PORT, () => {
   console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });

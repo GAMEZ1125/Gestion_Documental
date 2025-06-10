@@ -2,7 +2,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api', // Asegúrate de que coincida con tu backend
+  baseURL: 'http://gamez-solutions.ddns.net:4005/api', // Asegúrate de que coincida con tu backend
 });
 
 api.interceptors.request.use((config) => {
